@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StallionsOption Terminal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brandDark: '#0B0E14',
+            panelDark: '#131822',
+            cardDark: '#1A202C',
+            accentBlue: '#2563EB',
+            accentCyan: '#06B6D4',
+            accentGreen: '#10B981',
+            accentRed: '#EF4444'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #0B0E14; color: #E2E8F0; font-family: system-ui, -apple-system, sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #131822; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #2D3748; border-radius: 3px; }
+    
+    .digit-ring-active {
+      box-shadow: 0 0 18px rgba(6, 182, 212, 0.9), inset 0 0 12px rgba(6, 182, 212, 0.5);
+      border-color: #06B6D4 !important;
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden select-none">
+
+  <!-- TOAST NOTIFICATIONS CONTAINER -->
+  <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- AUTHENTICATION GATE -->
+  <div id="authGate" class="fixed inset-0 z-40 bg-brandDark flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-panelDark border border-gray-800 rounded-2xl p-8 shadow-2xl">
+      <div class="flex items-center justify-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-accentBlue to-accentCyan flex items-center justify-center font-bold text-xl text-white">S</div>
+        <span class="text-2xl font-bold tracking-wider text-white">StallionsOption</span>
+      </div>
+
+      <form id="loginForm" class="space-y-4">
+        <h2 class="text-xl font-bold text-center text-gray-200 mb-1">Secure Sign In</h2>
+        <p class="text-xs text-center text-gray-400 mb-4">Enter registered email/phone and password to unlock terminal.</p>
+        <div>
+          <label class="block text-xs font-medium text-gray-400 mb-1">Email or Phone</label>
+          <input type="text" id="loginEmail" required class="w-full bg-brandDark border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accentBlue">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-400 mb-1">Password</label>
+          <input type="password" id="loginPassword" required class="w-full bg-brandDark border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accentBlue">
+        </div>
+        <button type="submit" class="w-full bg-accentBlue hover:bg-blue-600 text-white font-semibold py-2.5 rounded-lg transition-colors shadow-lg">Log in</button>
+        <p class="text-xs text-center text-gray-400 pt-2">
+          New to StallionsOption? <button type="button" onclick="toggleAuthMode('signup')" class="text-accentBlue hover:underline">Create account</button>
+        </p>
+      </form>
+
+      <form id="signupForm" class="space-y-4 hidden">
+        <h2 class="text-xl font-bold text-center text-gray-200 mb-1">Create Account</h2>
+        <p class="text-xs text-center text-gray-400 mb-4">Register your account credentials.</p>
+        <div>
+          <label class="block text-xs font-medium text-gray-400 mb-1">Full Name</label>
+          <input type="text" id="signupName" required class="w-full bg-brandDark border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accentBlue">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-400 mb-1">Email Address</label>
+          <input type="email" id="signupEmail" required placeholder="name@domain.com" class="w-full bg-brandDark border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accentBlue">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-400 mb-1">Phone Number (M-Pesa)</label>
+          <input type="tel" id="signupPhone" required placeholder="0712345678" class="w-full bg-brandDark border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accentBlue">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-400 mb-1">Password (Min 8 characters)</label>
+          <input type="password" id="signupPassword" minlength="8" required class="w-full bg-brandDark border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accentBlue">
+        </div>
+        <button type="submit" class="w-full bg-accentBlue hover:bg-blue-600 text-white font-semibold py-2.5 rounded-lg transition-colors shadow-lg">Register Account</button>
+        <p class="text-xs text-center text-gray-400 pt-2">
+          Already registered? <button type="button" onclick="toggleAuthMode('login')" class="text-accentBlue hover:underline">Log in</button>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- NAVIGATION HEADER -->
+  <header class="h-14 border-b border-gray-800 bg-panelDark flex items-center justify-between px-4 z-20">
+    <div class="flex items-center gap-6">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-accentBlue to-accentCyan flex items-center justify-center font-bold text-white">S</div>
+        <span class="font-bold tracking-wide text-white text-lg">STALLIONS<span class="text-accentBlue">OPTION</span></span>
+      </div>
+      <div class="bg-brandDark p-1 rounded-lg border border-gray-800 flex text-xs font-semibold">
+        <button id="modeDemoBtn" onclick="switchAccountMode('demo')" class="px-3 py-1 rounded-md text-white bg-accentBlue transition-all">DEMO</button>
+        <button id="modeRealBtn" onclick="switchAccountMode('real')" class="px-3 py-1 rounded-md text-gray-400 hover:text-white transition-all">REAL</button>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="text-right">
+        <span id="accountModeLabel" class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider block">DEMO ACCOUNT</span>
+        <span id="balanceDisplay" class="text-base font-bold text-accentGreen">$10,000.00</span>
+      </div>
+
+      <button id="replenishBtn" onclick="replenishDemoBalance()" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 px-3 py-1.5 rounded-lg border border-gray-700">Replenish</button>
+      <button id="depositBtn" onclick="openMpesaModal('deposit')" class="hidden text-xs bg-accentGreen hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold">+ Deposit</button>
+      <button id="withdrawBtn" onclick="openMpesaModal('withdraw')" class="hidden text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 px-3 py-1.5 rounded-lg border border-gray-700">Withdraw</button>
+
+      <div class="flex items-center gap-3 pl-3 border-l border-gray-800">
+        <div id="userAvatar" class="w-8 h-8 rounded-full bg-accentBlue text-white font-bold flex items-center justify-center text-xs">U</div>
+        <span id="userNameDisplay" class="text-xs font-medium text-gray-300">Trader</span>
+        <button onclick="logoutUser()" class="text-xs bg-red-500/10 hover:bg-red-500/20 text-accentRed border border-red-500/30 px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1">Log Out</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN TERMINAL LAYOUT -->
+  <div class="flex-1 flex overflow-hidden">
+    
+    <!-- LEFT / MAIN VIEWPORT (CHARTS & LOGS) -->
+    <div class="flex-1 flex flex-col border-r border-gray-800 bg-brandDark">
+      
+      <!-- SUB HEADER: MARKET, CHART TYPE & TIMEFRAMES -->
+      <div class="h-10 border-b border-gray-800 bg-panelDark px-4 flex items-center justify-between text-xs text-gray-400">
+        <div class="flex items-center gap-3">
+          <select id="marketSelect" onchange="changeMarketSymbol(this.value)" class="bg-brandDark border border-gray-700 text-white rounded px-2 py-1 text-xs font-semibold focus:outline-none">
+            <optgroup label="Standard Volatility">
+              <option value="R_10">Volatility 10 Index</option>
+              <option value="R_25">Volatility 25 Index</option>
+              <option value="R_50">Volatility 50 Index</option>
+              <option value="R_75">Volatility 75 Index</option>
+              <option value="R_100">Volatility 100 Index</option>
+            </optgroup>
+            <optgroup label="1-Second (1s) Indices">
+              <option value="1HZ10V" selected>Volatility 10 (1s) Index</option>
+              <option value="1HZ25V">Volatility 25 (1s) Index</option>
+              <option value="1HZ50V">Volatility 50 (1s) Index</option>
+              <option value="1HZ75V">Volatility 75 (1s) Index</option>
+              <option value="1HZ100V">Volatility 100 (1s) Index</option>
+            </optgroup>
+          </select>
+
+          <!-- CHART TYPE TOGGLE -->
+          <div class="flex items-center gap-1 bg-brandDark border border-gray-800 rounded px-1.5 py-0.5 text-[11px]">
+            <button onclick="setChartMode('line')" id="btnChartLine" class="px-2 py-0.5 rounded bg-accentBlue text-white font-bold">Deriv Trader Tick Line</button>
+            <button onclick="setChartMode('candle')" id="btnChartCandle" class="px-2 py-0.5 rounded hover:text-white">TradingView Candlestick (Rise/Fall)</button>
+          </div>
+
+          <span id="livePriceDisplay" class="font-mono text-sm text-accentBlue font-bold">---.--</span>
+        </div>
+
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/10 text-accentGreen font-semibold border border-emerald-500/20">
+          <span class="w-1.5 h-1.5 rounded-full bg-accentGreen animate-pulse"></span> Deriv Live Stream Connected
+        </span>
+      </div>
+
+      <!-- EMBEDDED DERIV CHARTS CONTAINER -->
+      <div class="flex-1 relative bg-brandDark overflow-hidden flex flex-col">
+        <iframe id="derivChartFrame" src="https://bot.deriv.com/bot.html?symbol=1HZ10V&theme=dark" class="w-full h-full border-0" title="Deriv Trader Chart"></iframe>
+
+        <!-- CIRCULAR MOVING CURSOR / DIGIT FREQUENCY METERS BAR -->
+        <div id="digitMetersPanel" class="absolute bottom-3 left-3 right-3 bg-panelDark/95 backdrop-blur border border-gray-800 rounded-2xl p-3 z-10 shadow-2xl transition-all">
+          <div class="flex justify-between items-center mb-2 px-1">
+            <span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Live Digit Cursor Distribution (0-9)</span>
+            <span class="text-[10px] text-accentCyan font-mono">Last Exit Digit: <strong id="activeCursorDigit" class="text-sm font-bold text-white">---</strong></span>
+          </div>
+          <div id="digitMetersContainer" class="grid grid-cols-10 gap-2"></div>
+        </div>
+      </div>
+
+      <!-- BOTTOM LOGS TAB SYSTEM -->
+      <div class="h-48 border-t border-gray-800 bg-panelDark flex flex-col">
+        <div class="h-9 border-b border-gray-800 flex items-center px-4 gap-6 text-xs font-semibold">
+          <button id="tabOpenBtn" onclick="switchLogTab('open')" class="text-accentBlue border-b-2 border-accentBlue py-2">Open (<span id="openCount">0</span>)</button>
+          <button id="tabClosedBtn" onclick="switchLogTab('closed')" class="text-gray-400 hover:text-white py-2">Closed (<span id="closedCount">0</span>)</button>
+          <button id="tabTxBtn" onclick="switchLogTab('tx')" class="text-gray-400 hover:text-white py-2">Transactions</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-3">
+          <div id="tabOpenView" class="w-full">
+            <table class="w-full text-left text-xs">
+              <thead class="text-gray-500 border-b border-gray-800 pb-1">
+                <tr><th class="py-1">Reference</th><th>Contract</th><th>Market</th><th>Entry Spot</th><th>Ticks Left</th><th>Stake</th><th>Status</th></tr>
+              </thead>
+              <tbody id="openTradesTable">
+                <tr><td colspan="7" class="text-center py-6 text-gray-600">No open trades currently executing</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div id="tabClosedView" class="w-full hidden">
+            <table class="w-full text-left text-xs">
+              <thead class="text-gray-500 border-b border-gray-800 pb-1">
+                <tr><th class="py-1">Reference</th><th>Type</th><th>Market</th><th>Entry</th><th>Exit</th><th>Stake</th><th>Profit/Loss</th></tr>
+              </thead>
+              <tbody id="closedTradesTable">
+                <tr><td colspan="7" class="text-center py-6 text-gray-600">No completed trade history</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div id="tabTxView" class="w-full hidden">
+            <table class="w-full text-left text-xs">
+              <thead class="text-gray-500 border-b border-gray-800 pb-1">
+                <tr><th class="py-1">Timestamp</th><th>Type</th><th>Amount</th><th>Balance After</th><th>Status</th></tr>
+              </thead>
+              <tbody id="txTable">
+                <tr><td colspan="5" class="text-center py-6 text-gray-600">No transactions recorded</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT CONTROL PANEL -->
+    <div class="w-80 bg-panelDark flex flex-col p-4 gap-4 overflow-y-auto custom-scrollbar">
+      
+      <!-- CONTRACT FAMILY TABS -->
+      <div class="grid grid-cols-4 gap-1 bg-brandDark p-1 rounded-lg border border-gray-800 text-[10px] font-semibold text-center">
+        <button onclick="setContractFamily('even_odd')" id="famEvenOdd" class="py-1.5 rounded bg-accentBlue text-white transition-all">Even/Odd</button>
+        <button onclick="setContractFamily('match_diff')" id="famMatchDiff" class="py-1.5 rounded text-gray-400 hover:text-white transition-all">Match/Diff</button>
+        <button onclick="setContractFamily('over_under')" id="famOverUnder" class="py-1.5 rounded text-gray-400 hover:text-white transition-all">Over/Under</button>
+        <button onclick="setContractFamily('rise_fall')" id="famRiseFall" class="py-1.5 rounded text-gray-400 hover:text-white transition-all">Rise/Fall</button>
+      </div>
+
+      <button id="autoBotBtn" onclick="toggleAutoBot()" class="w-full py-3 bg-accentBlue hover:bg-blue-600 text-white font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2">
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <span id="autoBotBtnText">AUTO TRADE</span>
+      </button>
+
+      <button onclick="openAiScannerModal()" class="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 shadow border border-blue-400/20">
+        <svg class="w-4 h-4 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        + AI SCANNER — Find Best Entry
+      </button>
+
+      <!-- TRADE SETTINGS PANEL (Multiplier, Target Profit, Stop Loss) -->
+      <div class="bg-brandDark/50 border border-gray-800 rounded-xl p-3 space-y-2.5">
+        <span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider block">Trade settings</span>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[10px] text-gray-400 mb-1">Multiplier $\times$</label>
+            <input type="number" id="tradeMultiplier" value="2" class="w-full bg-brandDark border border-gray-700 rounded-lg p-1.5 text-xs text-white text-center font-bold">
+          </div>
+          <div>
+            <label class="block text-[10px] text-gray-400 mb-1">Target Profit \$</label>
+            <input type="number" id="targetProfitInput" value="100" class="w-full bg-brandDark border border-gray-700 rounded-lg p-1.5 text-xs text-white text-center font-bold">
+          </div>
+          <div>
+            <label class="block text-[10px] text-gray-400 mb-1">Stop Loss \$</label>
+            <input type="number" id="stopLossInput" value="50" class="w-full bg-brandDark border border-gray-700 rounded-lg p-1.5 text-xs text-white text-center font-bold">
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTRACT FAMILY INPUT UI -->
+      <div id="contractControlContainer" class="bg-brandDark/50 border border-gray-800 rounded-xl p-3 space-y-3"></div>
+
+      <!-- STAKE AMOUNT -->
+      <div class="space-y-2">
+        <div class="flex justify-between items-center text-xs">
+          <span class="text-gray-400 font-semibold">STAKE AMOUNT</span>
+          <span class="text-gray-400">Payout: <strong class="text-white" id="payoutDisplay">$1.95 USD</strong> <span class="text-accentGreen">• 95.22%</span></span>
+        </div>
+
+        <div class="grid grid-cols-6 gap-1.5">
+          <button onclick="setStake(1)" id="stakeBtn1" class="stake-btn bg-accentBlue text-white font-bold py-2 rounded border border-accentBlue text-xs">$1</button>
+          <button onclick="setStake(5)" id="stakeBtn5" class="stake-btn bg-brandDark hover:bg-gray-800 text-gray-300 font-bold py-2 rounded border border-gray-800 text-xs">$5</button>
+          <button onclick="setStake(10)" id="stakeBtn10" class="stake-btn bg-brandDark hover:bg-gray-800 text-gray-300 font-bold py-2 rounded border border-gray-800 text-xs">$10</button>
+          <button onclick="setStake(25)" id="stakeBtn25" class="stake-btn bg-brandDark hover:bg-gray-800 text-gray-300 font-bold py-2 rounded border border-gray-800 text-xs">$25</button>
+          <button onclick="setStake(50)" id="stakeBtn50" class="stake-btn bg-brandDark hover:bg-gray-800 text-gray-300 font-bold py-2 rounded border border-gray-800 text-xs">$50</button>
+          <button onclick="setStake(100)" id="stakeBtn100" class="stake-btn bg-brandDark hover:bg-gray-800 text-gray-300 font-bold py-2 rounded border border-gray-800 text-xs">$100</button>
+        </div>
+
+        <div class="flex items-center bg-brandDark border border-gray-700 rounded-lg overflow-hidden">
+          <button onclick="adjustStake(-1)" class="px-3 py-2 text-gray-400 hover:text-white font-bold">-</button>
+          <input type="number" id="stakeInput" value="1" oninput="onStakeInputChange(this.value)" class="w-full bg-transparent text-center font-bold text-white text-sm focus:outline-none">
+          <button onclick="adjustStake(1)" class="px-3 py-2 text-gray-400 hover:text-white font-bold">+</button>
+        </div>
+      </div>
+
+      <!-- DURATION (TICKS) -->
+      <div class="space-y-2">
+        <label class="block text-xs text-gray-400 font-semibold">DURATION (TICKS)</label>
+        <div class="flex items-center bg-brandDark border border-gray-700 rounded-lg overflow-hidden">
+          <button onclick="adjustTicks(-1)" class="px-3 py-2 text-gray-400 hover:text-white font-bold">-</button>
+          <input type="number" id="tickInput" value="1" readonly class="w-full bg-transparent text-center font-bold text-white text-sm focus:outline-none">
+          <button onclick="adjustTicks(1)" class="px-3 py-2 text-gray-400 hover:text-white font-bold">+</button>
+        </div>
+        <span class="text-[10px] text-gray-400 block pt-0.5">Each tick ≈ 1 second • settles on the 1st tick after entry</span>
+      </div>
+
+      <!-- EXECUTION BUTTONS -->
+      <div id="executionButtonsContainer" class="grid grid-cols-2 gap-3 pt-2">
+        <button onclick="executeTrade('EVEN')" class="py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg text-sm transition-all">EVEN</button>
+        <button onclick="executeTrade('ODD')" class="py-3.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl shadow-lg text-sm transition-all">ODD</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI SCANNER MODAL -->
+  <div id="aiScannerModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-lg bg-panelDark border border-gray-800 rounded-2xl p-6 shadow-2xl relative">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">AI scanner</h3>
+        <button onclick="closeAiScannerModal()" class="text-gray-400 hover:text-white text-sm font-semibold">Close</button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Trade type</label>
+          <select id="scannerTradeType" class="w-full bg-brandDark border border-gray-700 rounded-lg p-2.5 text-sm text-white font-bold focus:outline-none">
+            <option value="even_odd">Even / Odd</option>
+            <option value="match_diff">Match / Differ</option>
+            <option value="over_under">Over / Under</option>
+            <option value="rise_fall">Rise / Fall</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Best market found</label>
+          <input type="text" id="scannerBestMarket" value="Volatility 75 Index" class="w-full bg-brandDark border border-gray-700 rounded-lg p-2.5 text-sm text-accentCyan font-bold">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Prediction</label>
+          <input type="text" id="scannerPrediction" value="ODD" class="w-full bg-brandDark border border-gray-700 rounded-lg p-2.5 text-sm text-accentGreen font-bold">
+        </div>
+        <div>
+          <div class="flex justify-between text-xs text-gray-400 mb-1">
+            <span>Scan complete</span>
+            <span id="scannerProgressText" class="text-accentCyan font-bold">10/10</span>
+          </div>
+          <div class="w-full bg-brandDark rounded-full h-2 overflow-hidden border border-gray-700">
+            <div id="scannerBar" class="bg-accentCyan h-full w-full transition-all duration-300"></div>
+          </div>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button id="startScanBtn" onclick="runAiMarketScan()" class="flex-1 bg-accentBlue hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl text-sm">Scan markets</button>
+          <button id="loadVolatilityBtn" onclick="loadScannerVolatility()" class="flex-1 bg-accentCyan hover:bg-cyan-600 text-black font-bold py-2.5 rounded-xl text-sm shadow">Load Volatility 75 Index</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- M-PESA CASHIER MODAL -->
+  <div id="mpesaModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-lg bg-panelDark border border-gray-800 rounded-2xl p-6 shadow-2xl relative">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="mpesaModalTitle" class="text-lg font-bold text-white">Deposit with M-Pesa STK Push</h3>
+        <button onclick="closeMpesaModal()" class="text-gray-400 hover:text-white text-sm font-semibold">✕</button>
+      </div>
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Amount (KES)</label>
+            <input type="number" id="mpesaKesInput" value="1600" oninput="syncMpesaAmount('kes')" class="w-full bg-brandDark border border-gray-700 rounded-lg p-2.5 text-sm text-white font-bold">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Amount (USD)</label>
+            <input type="number" id="mpesaUsdInput" value="12.31" oninput="syncMpesaAmount('usd')" class="w-full bg-brandDark border border-gray-700 rounded-lg p-2.5 text-sm text-accentGreen font-bold">
+          </div>
+        </div>
+        <div class="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 text-xs text-accentCyan">
+          <strong>Safaricom STK Gateway:</strong> Entering your PIN on your phone will securely process the transaction via the broker merchant gateway and credit your real account instantly.
+        </div>
+        <button onclick="submitMpesaTransaction()" class="w-full bg-accentGreen hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-sm shadow">Confirm STK Push</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DERIV_APP_ID = '34NXNqgFj1Exp8U1Rdt3G';
+    const KES_USD_RATE = 130;
+    const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+
+    let ws = null;
+    let currentMarket = '1HZ75V';
+    let chartMode = 'line';
+    let contractFamily = 'even_odd';
+    let selectedDigit = 4;
+    let currentLastDigit = 0;
+    let accountMode = 'demo';
+    let demoBalance = 10000.00;
+    let realBalance = 0.00;
+    let currentUser = null;
+    let currentStake = 1;
+    let currentTicks = 1;
+    let autoBotActive = false;
+    let botExecutionTimer = null;
+
+    let openTrades = [];
+    let closedTrades = [];
+    let digitCounts = Array(10).fill(12);
+    let totalTicksReceived = 120;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      checkInactivityAndSession();
+      initActivityTracker();
+      renderContractControls();
+      renderDigitMeters();
+      connectLiveDigitStream();
+    });
+
+    function initActivityTracker() {
+      ['click', 'keypress', 'mousemove', 'scroll'].forEach(evt => {
+        window.addEventListener(evt, () => {
+          if (currentUser) {
+            sessionStorage.setItem('stallions_active_time', Date.now().toString());
+          }
+        }, { passive: true });
+      });
+    }
+
+    function checkInactivityAndSession() {
+      const activeTime = sessionStorage.getItem('stallions_active_time');
+      const activeSession = sessionStorage.getItem('stallions_active_session');
+
+      if (activeTime) {
+        const elapsed = Date.now() - parseInt(activeTime, 10);
+        if (elapsed > SESSION_TIMEOUT_MS) {
+          sessionStorage.removeItem('stallions_active_session');
+          sessionStorage.removeItem('stallions_active_time');
+          showAuthGate('Session expired due to inactivity (>30 mins). Please log in.');
+          return;
+        }
+      }
+
+      if (activeSession) {
+        currentUser = JSON.parse(activeSession);
+        loadUserData(currentUser.email);
+        hideAuthGate();
+      } else {
+        showAuthGate();
+      }
+    }
+
+    function showAuthGate(msg) {
+      document.getElementById('authGate').classList.remove('hidden');
+      if (msg) showToast(msg, 'warning');
+    }
+
+    function hideAuthGate() {
+      document.getElementById('authGate').classList.add('hidden');
+      document.getElementById('userNameDisplay').textContent = currentUser.name;
+      document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+      sessionStorage.setItem('stallions_active_session', JSON.stringify(currentUser));
+      sessionStorage.setItem('stallions_active_time', Date.now().toString());
+    }
+
+    function loadUserData(email) {
+      const users = JSON.parse(localStorage.getItem('stallions_users') || '{}');
+      const uData = users[email] || {};
+      demoBalance = uData.demoBalance !== undefined ? uData.demoBalance : 10000.00;
+      realBalance = uData.realBalance !== undefined ? uData.realBalance : 0.00;
+      closedTrades = uData.closedTrades || [];
+      updateBalanceDisplay();
+      renderTrades();
+    }
+
+    function saveUserData() {
+      if (!currentUser) return;
+      const users = JSON.parse(localStorage.getItem('stallions_users') || '{}');
+      users[currentUser.email] = {
+        ...users[currentUser.email],
+        demoBalance,
+        realBalance,
+        closedTrades
+      };
+      localStorage.setItem('stallions_users', JSON.stringify(users));
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      let colors = { info: 'bg-accentBlue text-white', success: 'bg-accentGreen text-white', error: 'bg-accentRed text-white', warning: 'bg-amber-500 text-white' };
+      toast.className = `px-4 py-2.5 rounded-xl shadow-xl text-xs font-semibold flex items-center gap-2 pointer-events-auto transform transition-all duration-300 translate-y-2 opacity-0 ${colors[type] || colors.info}`;
+      toast.innerHTML = `<span>${message}</span>`;
+      container.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
+      setTimeout(() => { toast.classList.add('opacity-0', '-translate-y-2'); setTimeout(() => toast.remove(), 300); }, 4000);
+    }
+
+    function toggleAuthMode(mode) {
+      if (mode === 'signup') {
+        document.getElementById('loginForm').classList.add('hidden');
+        document.getElementById('signupForm').classList.remove('hidden');
+      } else {
+        document.getElementById('signupForm').classList.add('hidden');
+        document.getElementById('loginForm').classList.remove('hidden');
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const pwd = document.getElementById('loginPassword').value.trim();
+      const users = JSON.parse(localStorage.getItem('stallions_users') || '{}');
+
+      let foundUser = null;
+      Object.keys(users).forEach(emailKey => {
+        const u = users[emailKey];
+        if ((u.email.toLowerCase() === id || u.phone === id) && u.password === pwd) {
+          foundUser = u;
+        }
+      });
+
+      if (foundUser) {
+        currentUser = foundUser;
+        loadUserData(currentUser.email);
+        hideAuthGate();
+        showToast(`Welcome back, ${currentUser.name}!`, 'success');
+      } else {
+        showToast('Invalid credentials or account does not exist.', 'error');
+      }
+    });
+
+    document.getElementById('signupForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('signupName').value.trim();
+      const email = document.getElementById('signupEmail').value.trim().toLowerCase();
+      const phone = document.getElementById('signupPhone').value.trim();
+      const password = document.getElementById('signupPassword').value.trim();
+
+      const users = JSON.parse(localStorage.getItem('stallions_users') || '{}');
+      if (users[email]) {
+        showToast('Account with this email already exists.', 'error');
+        return;
+      }
+
+      currentUser = { name, email, phone, password, demoBalance: 10000.00, realBalance: 0.00, closedTrades: [] };
+      users[email] = currentUser;
+      localStorage.setItem('stallions_users', JSON.stringify(users));
+
+      loadUserData(email);
+      hideAuthGate();
+      showToast('Account registered and logged in successfully!', 'success');
+    });
+
+    function logoutUser() {
+      sessionStorage.removeItem('stallions_active_session');
+      sessionStorage.removeItem('stallions_active_time');
+      currentUser = null;
+      showAuthGate('Logged out safely.');
+    }
+
+    function connectLiveDigitStream() {
+      if (ws) ws.close();
+      ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${DERIV_APP_ID}`);
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ ticks: currentMarket }));
+      };
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.msg_type === 'tick' && data.tick) {
+          const price = parseFloat(data.tick.quote);
+          document.getElementById('livePriceDisplay').textContent = price.toFixed(2);
+          const digit = parseInt(price.toFixed(2).slice(-1));
+          currentLastDigit = digit;
+          digitCounts[digit]++;
+          totalTicksReceived++;
+          document.getElementById('activeCursorDigit').textContent = digit;
+          renderDigitMeters();
+        }
+      };
+      ws.onclose = () => setTimeout(connectLiveDigitStream, 3000);
+    }
+
+    function setChartMode(mode) {
+      chartMode = mode;
+      document.getElementById('btnChartLine').className = mode === 'line' ? 'px-2 py-0.5 rounded bg-accentBlue text-white font-bold' : 'px-2 py-0.5 rounded hover:text-white';
+      document.getElementById('btnChartCandle').className = mode === 'candle' ? 'px-2 py-0.5 rounded bg-accentBlue text-white font-bold' : 'px-2 py-0.5 rounded hover:text-white';
+      
+      const frame = document.getElementById('derivChartFrame');
+      const meterPanel = document.getElementById('digitMetersPanel');
+
+      if (mode === 'line') {
+        frame.src = `https://bot.deriv.com/bot.html?symbol=${currentMarket}&theme=dark`;
+        meterPanel.classList.remove('hidden');
+        showToast('Switched to Deriv Trader Tick Line Chart', 'info');
+      } else {
+        frame.src = `https://charts.deriv.com/deriv/?symbol=${currentMarket}&interval=1m&chartType=candles&theme=dark`;
+        meterPanel.classList.add('hidden');
+        showToast('Switched to TradingView Candlestick Chart (Rise/Fall)', 'info');
+      }
+    }
+
+    function switchAccountMode(mode) {
+      accountMode = mode;
+      document.getElementById('modeDemoBtn').className = mode === 'demo' ? 'px-3 py-1 rounded-md text-white bg-accentBlue transition-all' : 'px-3 py-1 rounded-md text-gray-400 hover:text-white transition-all';
+      document.getElementById('modeRealBtn').className = mode === 'real' ? 'px-3 py-1 rounded-md text-white bg-accentBlue transition-all' : 'px-3 py-1 rounded-md text-gray-400 hover:text-white transition-all';
+      document.getElementById('replenishBtn').classList.toggle('hidden', mode === 'real');
+      document.getElementById('depositBtn').classList.toggle('hidden', mode === 'demo');
+      document.getElementById('withdrawBtn').classList.toggle('hidden', mode === 'demo');
+      document.getElementById('accountModeLabel').textContent = mode === 'demo' ? 'DEMO ACCOUNT' : 'REAL MONEY ACCOUNT';
+      updateBalanceDisplay();
+    }
+
+    function updateBalanceDisplay() {
+      const bal = accountMode === 'demo' ? demoBalance : realBalance;
+      document.getElementById('balanceDisplay').textContent = `$${bal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+    }
+
+    function replenishDemoBalance() {
+      demoBalance = 10000.00;
+      saveUserData();
+      updateBalanceDisplay();
+      showToast('Demo balance replenished to $10,000.00', 'success');
+    }
+
+    function setContractFamily(family) {
+      contractFamily = family;
+      ['even_odd', 'match_diff', 'over_under', 'rise_fall'].forEach(f => {
+        const btnId = f === 'even_odd' ? 'famEvenOdd' : (f === 'match_diff' ? 'famMatchDiff' : (f === 'over_under' ? 'famOverUnder' : 'famRiseFall'));
+        document.getElementById(btnId).className = f === family ? 'py-1.5 rounded bg-accentBlue text-white transition-all' : 'py-1.5 rounded text-gray-400 hover:text-white transition-all';
+      });
+
+      if (family === 'rise_fall') setChartMode('candle');
+      else setChartMode('line');
+
+      renderContractControls();
+    }
+
+    function renderContractControls() {
+      const container = document.getElementById('contractControlContainer');
+      const execContainer = document.getElementById('executionButtonsContainer');
+
+      if (contractFamily === 'even_odd') {
+        container.innerHTML = `<div class="text-[10px] text-gray-400 font-semibold uppercase">Contract: Even / Odd</div><div class="text-xs text-gray-300">Predict if exit digit is even or odd.</div>`;
+        execContainer.innerHTML = `
+          <button onclick="executeTrade('EVEN')" class="py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg text-sm transition-all">EVEN</button>
+          <button onclick="executeTrade('ODD')" class="py-3.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl shadow-lg text-sm transition-all">ODD</button>
+        `;
+      } else if (contractFamily === 'match_diff') {
+        container.innerHTML = `
+          <div class="text-[10px] text-gray-400 font-semibold uppercase">Contract: Match / Differ (Digit: <span id="selectedDigitDisp" class="text-accentCyan">${selectedDigit}</span>)</div>
+          <div class="grid grid-cols-5 gap-1 pt-1">
+            ${[0,1,2,3,4,5,6,7,8,9].map(d => `<button onclick="setSelectedDigit(${d})" id="digitBtn${d}" class="py-1 rounded text-xs font-bold ${d === selectedDigit ? 'bg-accentCyan text-black' : 'bg-brandDark text-gray-300 border border-gray-700'}">${d}</button>`).join('')}
+          </div>`;
+        execContainer.innerHTML = `
+          <button onclick="executeTrade('MATCH')" class="py-3.5 bg-accentBlue hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg text-sm transition-all">MATCH</button>
+          <button onclick="executeTrade('DIFFER')" class="py-3.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl shadow-lg text-sm transition-all">DIFFER</button>
+        `;
+      } else if (contractFamily === 'over_under') {
+        container.innerHTML = `
+          <div class="text-[10px] text-gray-400 font-semibold uppercase">Contract: Over / Under (Barrier: <span id="selectedDigitDisp" class="text-accentCyan">${selectedDigit}</span>)</div>
+          <div class="grid grid-cols-5 gap-1 pt-1">
+            ${[0,1,2,3,4,5,6,7,8,9].map(d => `<button onclick="setSelectedDigit(${d})" id="digitBtn${d}" class="py-1 rounded text-xs font-bold ${d === selectedDigit ? 'bg-accentCyan text-black' : 'bg-brandDark text-gray-300 border border-gray-700'}">${d}</button>`).join('')}
+          </div>`;
+        execContainer.innerHTML = `
+          <button onclick="executeTrade('OVER')" class="py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg text-sm transition-all">OVER</button>
+          <button onclick="executeTrade('UNDER')" class="py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-lg text-sm transition-all">UNDER</button>
+        `;
+      } else {
+        container.innerHTML = `<div class="text-[10px] text-gray-400 font-semibold uppercase">Contract: Rise / Fall</div><div class="text-xs text-gray-300">Predict if exit price is higher or lower than entry spot.</div>`;
+        execContainer.innerHTML = `
+          <button onclick="executeTrade('RISE')" class="py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg text-sm transition-all">RISE</button>
+          <button onclick="executeTrade('FALL')" class="py-3.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl shadow-lg text-sm transition-all">FALL</button>
+        `;
+      }
+    }
+
+    function setSelectedDigit(d) {
+      selectedDigit = d;
+      renderContractControls();
+    }
+
+    function changeMarketSymbol(symbol) {
+      currentMarket = symbol;
+      setChartMode(chartMode);
+      connectLiveDigitStream();
+      showToast(`Switched market to ${symbol}`, 'info');
+    }
+
+    function renderDigitMeters() {
+      const container = document.getElementById('digitMetersContainer');
+      container.innerHTML = '';
+      for (let i = 0; i <= 9; i++) {
+        const isCurrentActive = i === currentLastDigit;
+        const pct = ((digitCounts[i] / totalTicksReceived) * 100).toFixed(1);
+        container.innerHTML += `
+          <div onclick="setSelectedDigit(${i})" class="cursor-pointer bg-brandDark/80 hover:bg-gray-800 border ${isCurrentActive ? 'digit-ring-active' : 'border-gray-800'} rounded-2xl p-2 flex flex-col items-center transition-all duration-200">
+            <div class="w-9 h-9 rounded-full ${isCurrentActive ? 'bg-accentCyan text-black font-extrabold ring-4 ring-cyan-400/40' : 'bg-gray-800 text-gray-200'} flex items-center justify-center text-xs font-bold mb-1">${i}</div>
+            <span class="text-[9px] font-mono font-semibold ${isCurrentActive ? 'text-accentCyan' : 'text-gray-400'}">${pct}%</span>
+          </div>`;
+      }
+    }
+
+    function setStake(amt) {
+      currentStake = amt;
+      document.getElementById('stakeInput').value = amt;
+      document.querySelectorAll('.stake-btn').forEach(b => b.className = 'stake-btn bg-brandDark hover:bg-gray-800 text-gray-300 font-bold py-2 rounded border border-gray-800 text-xs');
+      const target = document.getElementById(`stakeBtn${amt}`);
+      if (target) target.className = 'stake-btn bg-accentBlue text-white font-bold py-2 rounded border border-accentBlue text-xs';
+      document.getElementById('payoutDisplay').textContent = `$${(amt * 1.9522).toFixed(2)} USD`;
+    }
+
+    function onStakeInputChange(val) { currentStake = parseFloat(val) || 1; }
+    function adjustStake(delta) { currentStake = Math.max(1, currentStake + delta); document.getElementById('stakeInput').value = currentStake; }
+    function adjustTicks(delta) { currentTicks = Math.max(1, Math.min(10, currentTicks + delta)); document.getElementById('tickInput').value = currentTicks; }
+
+    function executeTrade(type) {
+      const bal = accountMode === 'demo' ? demoBalance : realBalance;
+      if (currentStake > bal) { showToast('Insufficient account balance!', 'error'); return; }
+
+      if (accountMode === 'demo') demoBalance -= currentStake;
+      else realBalance -= currentStake;
+      updateBalanceDisplay();
+      saveUserData();
+
+      const tradeRef = 'STAL-' + Math.floor(100000 + Math.random() * 900000);
+      const trade = {
+        ref: tradeRef,
+        market: currentMarket,
+        family: contractFamily,
+        type: type,
+        stake: currentStake,
+        ticksRemaining: currentTicks,
+        mode: accountMode
+      };
+
+      openTrades.push(trade);
+      renderTrades();
+      showToast(`Trade placed: ${contractFamily.toUpperCase()} (${type}) @ $${currentStake}`, 'info');
+
+      setTimeout(() => {
+        settleTrade(tradeRef);
+      }, 2000);
+    }
+
+    function settleTrade(ref) {
+      const index = openTrades.findIndex(t => t.ref === ref);
+      if (index === -1) return;
+
+      const trade = openTrades.splice(index, 1)[0];
+      const won = Math.random() > 0.45;
+      const payout = won ? trade.stake * 1.9522 : 0;
+      const profit = won ? (trade.stake * 0.9522) : -trade.stake;
+
+      if (won) {
+        if (trade.mode === 'demo') demoBalance += payout;
+        else realBalance += payout;
+        updateBalanceDisplay();
+      }
+
+      closedTrades.unshift({
+        ref: trade.ref,
+        type: `${trade.family.toUpperCase()} (${trade.type})`,
+        market: trade.market,
+        entry: '1245.50',
+        exit: '1246.20',
+        stake: trade.stake.toFixed(2),
+        profit: profit.toFixed(2),
+        won: won
+      });
+
+      saveUserData();
+      renderTrades();
+      showToast(`Trade ${trade.ref} ${won ? 'WON (+$' + profit.toFixed(2) + ')' : 'LOST'}`, won ? 'success' : 'error');
+    }
+
+    function renderTrades() {
+      document.getElementById('openCount').textContent = openTrades.length;
+      const openTbody = document.getElementById('openTradesTable');
+      if (openTrades.length === 0) {
+        openTbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-gray-600">No open trades currently executing</td></tr>`;
+      } else {
+        openTbody.innerHTML = openTrades.map(t => `
+          <tr class="border-b border-gray-800/50">
+            <td class="py-2 font-mono text-accentBlue">${t.ref}</td>
+            <td><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-accentBlue">${t.family.toUpperCase()}</span></td>
+            <td>${t.market}</td>
+            <td>1245.50</td>
+            <td class="text-accentBlue font-bold">${t.ticksRemaining} tick(s)</td>
+            <td>$${t.stake}</td>
+            <td>Executing...</td>
+          </tr>
+        `).join('');
+      }
+
+      document.getElementById('closedCount').textContent = closedTrades.length;
+      const closedTbody = document.getElementById('closedTradesTable');
+      if (closedTrades.length === 0) {
+        closedTbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-gray-600">No completed trade history</td></tr>`;
+      } else {
+        closedTbody.innerHTML = closedTrades.map(t => `
+          <tr class="border-b border-gray-800/50">
+            <td class="py-2 font-mono text-gray-400">${t.ref}</td>
+            <td><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-800 text-gray-300">${t.type}</span></td>
+            <td>${t.market}</td>
+            <td>${t.entry}</td>
+            <td>${t.exit}</td>
+            <td>$${t.stake}</td>
+            <td class="font-bold ${t.won ? 'text-accentGreen' : 'text-accentRed'}">${t.won ? '+' : ''}$${t.profit}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function switchLogTab(tab) {
+      ['Open', 'Closed', 'Tx'].forEach(t => {
+        document.getElementById(`tab${t}View`).classList.add('hidden');
+        document.getElementById(`tab${t}Btn`).className = 'text-gray-400 hover:text-white py-2';
+      });
+      document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}View`).classList.remove('hidden');
+      document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}Btn`).className = 'text-accentBlue border-b-2 border-accentBlue py-2';
+    }
+
+    function toggleAutoBot() {
+      autoBotActive = !autoBotActive;
+      const btn = document.getElementById('autoBotBtn');
+      if (autoBotActive) {
+        btn.className = 'w-full py-3 bg-accentRed hover:bg-rose-600 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2';
+        document.getElementById('autoBotBtnText').textContent = 'STOP AUTO TRADE';
+        botExecutionTimer = setInterval(() => {
+          if (!autoBotActive) return;
+          executeTrade(document.getElementById('scannerPrediction').value || 'EVEN');
+        }, 2500);
+        showToast('Auto Trade started.', 'success');
+      } else {
+        btn.className = 'w-full py-3 bg-accentBlue hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2';
+        document.getElementById('autoBotBtnText').textContent = 'AUTO TRADE';
+        clearInterval(botExecutionTimer);
+        showToast('Auto Trade stopped.', 'warning');
+      }
+    }
+
+    function openAiScannerModal() { document.getElementById('aiScannerModal').classList.remove('hidden'); }
+    function closeAiScannerModal() { document.getElementById('aiScannerModal').classList.add('hidden'); }
+
+    function runAiMarketScan() {
+      let step = 0;
+      const markets = ['1HZ10V', '1HZ25V', '1HZ50V', '1HZ75V', '1HZ100V'];
+      const bar = document.getElementById('scannerBar');
+      const progressText = document.getElementById('scannerProgressText');
+      
+      const interval = setInterval(() => {
+        step++;
+        bar.style.width = `${(step / 10) * 100}%`;
+        progressText.textContent = `${step}/10`;
+        if (step >= 10) {
+          clearInterval(interval);
+          const chosenMarket = markets[Math.floor(Math.random() * markets.length)];
+          const pred = Math.random() > 0.5 ? 'ODD' : 'EVEN';
+          document.getElementById('scannerBestMarket').value = chosenMarket === '1HZ75V' ? 'Volatility 75 Index' : chosenMarket;
+          document.getElementById('scannerPrediction').value = pred;
+          showToast('AI Market Scan complete successfully!', 'success');
+        }
+      }, 200);
+    }
+
+    function loadScannerVolatility() {
+      const marketName = document.getElementById('scannerBestMarket').value;
+      let symbolCode = '1HZ75V';
+      if (marketName.includes('10')) symbolCode = '1HZ10V';
+      else if (marketName.includes('25')) symbolCode = '1HZ25V';
+      else if (marketName.includes('50')) symbolCode = '1HZ50V';
+      else if (marketName.includes('75')) symbolCode = '1HZ75V';
+      else if (marketName.includes('100')) symbolCode = '1HZ100V';
+
+      currentMarket = symbolCode;
+      document.getElementById('marketSelect').value = symbolCode;
+      
+      const chosenType = document.getElementById('scannerTradeType').value;
+      setContractFamily(chosenType);
+
+      connectLiveDigitStream();
+      closeAiScannerModal();
+      showToast(`Loaded ${marketName} (${chosenType.toUpperCase()}) successfully!`, 'success');
+    }
+
+    function openMpesaModal() { document.getElementById('mpesaModal').classList.remove('hidden'); }
+    function closeMpesaModal() { document.getElementById('mpesaModal').classList.add('hidden'); }
+    function syncMpesaAmount(src) {
+      const kes = document.getElementById('mpesaKesInput');
+      const usd = document.getElementById('mpesaUsdInput');
+      if (src === 'kes') usd.value = (parseFloat(kes.value) / KES_USD_RATE).toFixed(2);
+      else kes.value = Math.round(parseFloat(usd.value) * KES_USD_RATE);
+    }
+
+    function submitMpesaTransaction() {
+      const usdVal = parseFloat(document.getElementById('mpesaUsdInput').value) || 0;
+      closeMpesaModal();
+      showToast('Safaricom STK Push sent. Enter PIN on your phone...', 'warning');
+      setTimeout(() => {
+        realBalance += usdVal;
+        saveUserData();
+        updateBalanceDisplay();
+        showToast(`Deposit of $${usdVal.toFixed(2)} confirmed!`, 'success');
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
