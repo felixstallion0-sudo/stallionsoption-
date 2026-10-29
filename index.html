@@ -50,11 +50,11 @@
       </div>
 
       <form id="tokenAuthForm" class="space-y-4">
-        <h2 class="text-xl font-bold text-center text-gray-200 mb-1">Connect Live Account</h2>
-        <p class="text-xs text-center text-gray-400 mb-4">Enter your Deriv API Token with <strong>Read</strong> &amp; <strong>Trade</strong> scopes enabled.</p>
+        <h2 class="text-xl font-bold text-center text-gray-200 mb-1">Connect Live Broker</h2>
+        <p class="text-xs text-center text-gray-400 mb-4">Enter your Deriv API Token with <strong>Read</strong> &amp; <strong>Trade</strong> permissions.</p>
         
         <div>
-          <label class="block text-xs font-medium text-gray-400 mb-1">Account Label / Trader Name</label>
+          <label class="block text-xs font-medium text-gray-400 mb-1">Trader Name</label>
           <input type="text" id="traderName" placeholder="e.g. Master Trader" required class="w-full bg-brandDark border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accentBlue">
         </div>
 
@@ -68,11 +68,7 @@
           <input type="tel" id="traderPhone" placeholder="0712345678" required class="w-full bg-brandDark border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accentBlue">
         </div>
 
-        <button type="submit" class="w-full bg-accentBlue hover:bg-blue-600 text-white font-semibold py-2.5 rounded-lg transition-colors shadow-lg">Authenticate &amp; Launch Terminal</button>
-        
-        <div class="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 text-[11px] text-accentCyan mt-2">
-          💡 <strong>How to get a token:</strong> Log into Deriv.com &rightarrow; Account Settings &rightarrow; Security &rightarrow; API Token &rightarrow; Tick "Read" &amp; "Trade" &rightarrow; Create &amp; Copy Token.
-        </div>
+        <button type="submit" class="w-full bg-accentBlue hover:bg-blue-600 text-white font-semibold py-2.5 rounded-lg transition-colors shadow-lg">Authenticate &amp; Link Account</button>
       </form>
     </div>
   </div>
@@ -97,13 +93,13 @@
       </div>
 
       <button id="replenishBtn" onclick="replenishDemoBalance()" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 px-3 py-1.5 rounded-lg border border-gray-700">Replenish</button>
-      <button id="depositBtn" onclick="openMpesaModal('deposit')" class="hidden text-xs bg-accentGreen hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold">+ Deposit</button>
-      <button id="withdrawBtn" onclick="openMpesaModal('withdraw')" class="hidden text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 px-3 py-1.5 rounded-lg border border-gray-700">Withdraw</button>
+      <button id="depositBtn" onclick="openMpesaModal()" class="hidden text-xs bg-accentGreen hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold">+ Deposit</button>
+      <button id="withdrawBtn" onclick="openMpesaModal()" class="hidden text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 px-3 py-1.5 rounded-lg border border-gray-700">Withdraw</button>
 
       <div class="flex items-center gap-3 pl-3 border-l border-gray-800">
         <div id="userAvatar" class="w-8 h-8 rounded-full bg-accentBlue text-white font-bold flex items-center justify-center text-xs">U</div>
         <span id="userNameDisplay" class="text-xs font-medium text-gray-300">Trader</span>
-        <button onclick="logoutUser()" class="text-xs bg-red-500/10 hover:bg-red-500/20 text-accentRed border border-red-500/30 px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1">Disconnect</button>
+        <button onclick="logoutUser()" class="text-xs bg-red-500/10 hover:bg-red-500/20 text-accentRed border border-red-500/30 px-2.5 py-1.5 rounded-lg font-semibold">Disconnect</button>
       </div>
     </div>
   </header>
@@ -118,19 +114,19 @@
       <div class="h-10 border-b border-gray-800 bg-panelDark px-4 flex items-center justify-between text-xs text-gray-400">
         <div class="flex items-center gap-3">
           <select id="marketSelect" onchange="changeMarketSymbol(this.value)" class="bg-brandDark border border-gray-700 text-white rounded px-2 py-1 text-xs font-semibold focus:outline-none">
-            <optgroup label="Standard Volatility">
-              <option value="R_10">Volatility 10 Index</option>
-              <option value="R_25">Volatility 25 Index</option>
-              <option value="R_50">Volatility 50 Index</option>
-              <option value="R_75">Volatility 75 Index</option>
-              <option value="R_100">Volatility 100 Index</option>
-            </optgroup>
             <optgroup label="1-Second (1s) Indices">
               <option value="1HZ10V">Volatility 10 (1s) Index</option>
               <option value="1HZ25V">Volatility 25 (1s) Index</option>
               <option value="1HZ50V">Volatility 50 (1s) Index</option>
               <option value="1HZ75V" selected>Volatility 75 (1s) Index</option>
               <option value="1HZ100V">Volatility 100 (1s) Index</option>
+            </optgroup>
+            <optgroup label="Standard Volatility">
+              <option value="R_10">Volatility 10 Index</option>
+              <option value="R_25">Volatility 25 Index</option>
+              <option value="R_50">Volatility 50 Index</option>
+              <option value="R_75">Volatility 75 Index</option>
+              <option value="R_100">Volatility 100 Index</option>
             </optgroup>
           </select>
 
@@ -144,7 +140,7 @@
         </div>
 
         <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/10 text-accentGreen font-semibold border border-emerald-500/20">
-          <span class="w-1.5 h-1.5 rounded-full bg-accentGreen animate-pulse"></span> Deriv Live WebSocket Active
+          <span class="w-1.5 h-1.5 rounded-full bg-accentGreen animate-pulse"></span> Deriv Live Stream Connected
         </span>
       </div>
 
@@ -311,24 +307,24 @@
         </div>
         <div>
           <label class="block text-xs text-gray-400 mb-1">Best market found</label>
-          <input type="text" id="scannerBestMarket" value="Volatility 75 Index" class="w-full bg-brandDark border border-gray-700 rounded-lg p-2.5 text-sm text-accentCyan font-bold">
+          <input type="text" id="scannerBestMarket" value="Click 'Scan markets' to begin" class="w-full bg-brandDark border border-gray-700 rounded-lg p-2.5 text-sm text-accentCyan font-bold" readonly>
         </div>
         <div>
           <label class="block text-xs text-gray-400 mb-1">Prediction</label>
-          <input type="text" id="scannerPrediction" value="ODD" class="w-full bg-brandDark border border-gray-700 rounded-lg p-2.5 text-sm text-accentGreen font-bold">
+          <input type="text" id="scannerPrediction" value="---" class="w-full bg-brandDark border border-gray-700 rounded-lg p-2.5 text-sm text-accentGreen font-bold" readonly>
         </div>
         <div>
           <div class="flex justify-between text-xs text-gray-400 mb-1">
             <span>Scan complete</span>
-            <span id="scannerProgressText" class="text-accentCyan font-bold">10/10</span>
+            <span id="scannerProgressText" class="text-accentCyan font-bold">0/10</span>
           </div>
           <div class="w-full bg-brandDark rounded-full h-2 overflow-hidden border border-gray-700">
-            <div id="scannerBar" class="bg-accentCyan h-full w-full transition-all duration-300"></div>
+            <div id="scannerBar" class="bg-accentCyan h-full w-0 transition-all duration-300"></div>
           </div>
         </div>
         <div class="flex gap-3 pt-2">
           <button id="startScanBtn" onclick="runAiMarketScan()" class="flex-1 bg-accentBlue hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl text-sm">Scan markets</button>
-          <button id="loadVolatilityBtn" onclick="loadScannerVolatility()" class="flex-1 bg-accentCyan hover:bg-cyan-600 text-black font-bold py-2.5 rounded-xl text-sm shadow">Load Volatility 75 Index</button>
+          <button id="loadVolatilityBtn" onclick="loadScannerVolatility()" class="flex-1 bg-accentCyan hover:bg-cyan-600 text-black font-bold py-2.5 rounded-xl text-sm shadow">Load Selected Market</button>
         </div>
       </div>
     </div>
@@ -388,11 +384,12 @@
     let autoBotActive = false;
     let botExecutionTimer = null;
     let sessionNetProfit = 0;
+    let scannedSymbolCode = '1HZ75V';
 
     let openTrades = [];
     let closedTrades = [];
-    let digitCounts = Array(10).fill(12);
-    let totalTicksReceived = 120;
+    let digitCounts = Array(10).fill(10);
+    let totalTicksReceived = 100;
 
     window.addEventListener('DOMContentLoaded', () => {
       checkInactivityAndSession();
@@ -489,7 +486,7 @@
             realBalance = parseFloat(authData.balance) || 0.00;
             switchAccountMode('real');
             hideAuthGate();
-            showToast(`Connected to Deriv Account ${authData.loginid}! Balance: $${realBalance.toFixed(2)}`, 'success');
+            showToast(`Connected to Deriv Account ${authData.loginid}!`, 'success');
           } else {
             showToast(`Deriv Token Error: ${response.error.message}`, 'error');
           }
@@ -638,7 +635,7 @@
       container.innerHTML = '';
       for (let i = 0; i <= 9; i++) {
         const isCurrentActive = i === currentLastDigit;
-        const pct = ((digitCounts[i] / totalTicksReceived) * 100).toFixed(1);
+        const pct = totalTicksReceived > 0 ? ((digitCounts[i] / totalTicksReceived) * 100).toFixed(1) : '10.0';
         container.innerHTML += `
           <div onclick="setSelectedDigit(${i})" class="cursor-pointer bg-brandDark/80 hover:bg-gray-800 border ${isCurrentActive ? 'digit-ring-active' : 'border-gray-800'} rounded-2xl p-2 flex flex-col items-center transition-all duration-200">
             <div class="w-9 h-9 rounded-full ${isCurrentActive ? 'bg-accentCyan text-black font-extrabold ring-4 ring-cyan-400/40' : 'bg-gray-800 text-gray-200'} flex items-center justify-center text-xs font-bold mb-1">${i}</div>
@@ -826,7 +823,19 @@
 
     function runAiMarketScan() {
       let step = 0;
-      const markets = ['1HZ10V', '1HZ25V', '1HZ50V', '1HZ75V', '1HZ100V'];
+      const symbols = [
+        { code: '1HZ10V', name: 'Volatility 10 (1s) Index' },
+        { code: '1HZ25V', name: 'Volatility 25 (1s) Index' },
+        { code: '1HZ50V', name: 'Volatility 50 (1s) Index' },
+        { code: '1HZ75V', name: 'Volatility 75 (1s) Index' },
+        { code: '1HZ100V', name: 'Volatility 100 (1s) Index' },
+        { code: 'R_10', name: 'Volatility 10 Index' },
+        { code: 'R_25', name: 'Volatility 25 Index' },
+        { code: 'R_50', name: 'Volatility 50 Index' },
+        { code: 'R_75', name: 'Volatility 75 Index' },
+        { code: 'R_100', name: 'Volatility 100 Index' }
+      ];
+      
       const bar = document.getElementById('scannerBar');
       const progressText = document.getElementById('scannerProgressText');
       
@@ -836,33 +845,29 @@
         progressText.textContent = `${step}/10`;
         if (step >= 10) {
           clearInterval(interval);
-          const chosenMarket = markets[Math.floor(Math.random() * markets.length)];
-          const pred = Math.random() > 0.5 ? 'ODD' : 'EVEN';
-          document.getElementById('scannerBestMarket').value = chosenMarket === '1HZ75V' ? 'Volatility 75 Index' : chosenMarket;
+          const chosen = symbols[Math.floor(Math.random() * symbols.length)];
+          scannedSymbolCode = chosen.code;
+          const preds = ['EVEN', 'ODD', 'MATCH', 'DIFFER', 'OVER', 'UNDER'];
+          const pred = preds[Math.floor(Math.random() * preds.length)];
+
+          document.getElementById('scannerBestMarket').value = chosen.name;
           document.getElementById('scannerPrediction').value = pred;
-          showToast('AI Market Scan complete successfully!', 'success');
+          document.getElementById('loadVolatilityBtn').textContent = `Load ${chosen.name}`;
+          showToast(`AI Scan complete! Best market: ${chosen.name}`, 'success');
         }
       }, 200);
     }
 
     function loadScannerVolatility() {
-      const marketName = document.getElementById('scannerBestMarket').value;
-      let symbolCode = '1HZ75V';
-      if (marketName.includes('10')) symbolCode = '1HZ10V';
-      else if (marketName.includes('25')) symbolCode = '1HZ25V';
-      else if (marketName.includes('50')) symbolCode = '1HZ50V';
-      else if (marketName.includes('75')) symbolCode = '1HZ75V';
-      else if (marketName.includes('100')) symbolCode = '1HZ100V';
-
-      currentMarket = symbolCode;
-      document.getElementById('marketSelect').value = symbolCode;
+      currentMarket = scannedSymbolCode;
+      document.getElementById('marketSelect').value = scannedSymbolCode;
       
       const chosenType = document.getElementById('scannerTradeType').value;
       setContractFamily(chosenType);
 
       connectLiveDigitStream();
       closeAiScannerModal();
-      showToast(`Loaded ${marketName} (${chosenType.toUpperCase()}) successfully!`, 'success');
+      showToast(`Loaded market and contract successfully!`, 'success');
     }
 
     function openMpesaModal() {
