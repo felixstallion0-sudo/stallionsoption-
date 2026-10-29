@@ -41,34 +41,48 @@
   <!-- TOAST NOTIFICATIONS CONTAINER -->
   <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- AUTHENTICATION GATE (DERIV API TOKEN LINK) -->
+  <!-- AUTHENTICATION GATE (DERIV OAUTH & API TOKEN) -->
   <div id="authGate" class="fixed inset-0 z-40 bg-brandDark flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-panelDark border border-gray-800 rounded-2xl p-8 shadow-2xl">
-      <div class="flex items-center justify-center gap-3 mb-6">
+    <div class="w-full max-w-md bg-panelDark border border-gray-800 rounded-2xl p-8 shadow-2xl space-y-6">
+      <div class="flex items-center justify-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-accentBlue to-accentCyan flex items-center justify-center font-bold text-xl text-white">S</div>
         <span class="text-2xl font-bold tracking-wider text-white">StallionsOption</span>
       </div>
 
-      <form id="tokenAuthForm" class="space-y-4">
-        <h2 class="text-xl font-bold text-center text-gray-200 mb-1">Connect Live Broker</h2>
-        <p class="text-xs text-center text-gray-400 mb-4">Enter your Deriv API Token with <strong>Trade</strong> &amp; <strong>Account management</strong> permissions.</p>
-        
+      <div class="text-center space-y-1">
+        <h2 class="text-xl font-bold text-gray-200">Connect Your Deriv Broker Account</h2>
+        <p class="text-xs text-gray-400">Log in directly via Deriv to authorize trading, deposits &amp; withdrawals.</p>
+      </div>
+
+      <!-- DIRECT DERIV OAUTH REDIRECT BUTTON -->
+      <button onclick="redirectToDerivOAuth()" class="w-full py-3.5 bg-accentRed hover:bg-rose-600 text-white font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 text-sm">
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
+        Login via Deriv Official Portal
+      </button>
+
+      <div class="relative flex py-1 items-center">
+        <div class="flex-grow border-t border-gray-800"></div>
+        <span class="flex-shrink mx-4 text-[10px] text-gray-500 uppercase font-semibold">Or Connect Manual Token</span>
+        <div class="flex-grow border-t border-gray-800"></div>
+      </div>
+
+      <form id="tokenAuthForm" class="space-y-3">
         <div>
           <label class="block text-xs font-medium text-gray-400 mb-1">Trader Name</label>
-          <input type="text" id="traderName" placeholder="e.g. Master Trader" required class="w-full bg-brandDark border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accentBlue">
+          <input type="text" id="traderName" placeholder="e.g. Master Trader" required class="w-full bg-brandDark border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-accentBlue">
         </div>
 
         <div>
           <label class="block text-xs font-medium text-gray-400 mb-1">Deriv API Token</label>
-          <input type="password" id="derivApiToken" placeholder="Paste your token here..." required class="w-full bg-brandDark border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accentBlue">
+          <input type="password" id="derivApiToken" placeholder="Paste your token here..." required class="w-full bg-brandDark border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-accentBlue">
         </div>
 
         <div>
           <label class="block text-xs font-medium text-gray-400 mb-1">M-Pesa Phone Number</label>
-          <input type="tel" id="traderPhone" placeholder="0712345678" required class="w-full bg-brandDark border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accentBlue">
+          <input type="tel" id="traderPhone" placeholder="0712345678" required class="w-full bg-brandDark border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-accentBlue">
         </div>
 
-        <button type="submit" class="w-full bg-accentBlue hover:bg-blue-600 text-white font-semibold py-2.5 rounded-lg transition-colors shadow-lg">Authenticate &amp; Link Account</button>
+        <button type="submit" class="w-full bg-accentBlue hover:bg-blue-600 text-white font-semibold py-2.5 rounded-lg transition-colors shadow">Link Token &amp; Start Trading</button>
       </form>
     </div>
   </div>
@@ -110,7 +124,7 @@
     <!-- LEFT / MAIN VIEWPORT (CHARTS & LOGS) -->
     <div class="flex-1 flex flex-col border-r border-gray-800 bg-brandDark">
       
-      <!-- SUB HEADER: MARKET, CHART TYPE & TIMEFRAMES -->
+      <!-- SUB HEADER: MARKET, TIMEFRAME & CHART CONTROLS -->
       <div class="h-10 border-b border-gray-800 bg-panelDark px-4 flex items-center justify-between text-xs text-gray-400">
         <div class="flex items-center gap-3">
           <select id="marketSelect" onchange="changeMarketSymbol(this.value)" class="bg-brandDark border border-gray-700 text-white rounded px-2 py-1 text-xs font-semibold focus:outline-none">
@@ -130,17 +144,17 @@
             </optgroup>
           </select>
 
-          <!-- CHART TYPE TOGGLE -->
+          <!-- CHART TYPE & TIMEFRAME TOGGLE -->
           <div class="flex items-center gap-1 bg-brandDark border border-gray-800 rounded px-1.5 py-0.5 text-[11px]">
-            <button onclick="setChartMode('line')" id="btnChartLine" class="px-2 py-0.5 rounded bg-accentBlue text-white font-bold">Deriv Trader Tick Line</button>
-            <button onclick="setChartMode('candle')" id="btnChartCandle" class="px-2 py-0.5 rounded hover:text-white">TradingView Candlestick (Rise/Fall)</button>
+            <button onclick="setChartMode('line')" id="btnChartLine" class="px-2 py-0.5 rounded bg-accentBlue text-white font-bold">1-Tick Line (1s)</button>
+            <button onclick="setChartMode('candle')" id="btnChartCandle" class="px-2 py-0.5 rounded hover:text-white">TradingView Candles</button>
           </div>
 
           <span id="livePriceDisplay" class="font-mono text-sm text-accentBlue font-bold">---.--</span>
         </div>
 
         <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/10 text-accentGreen font-semibold border border-emerald-500/20">
-          <span class="w-1.5 h-1.5 rounded-full bg-accentGreen animate-pulse"></span> Deriv Live Stream Connected
+          <span class="w-1.5 h-1.5 rounded-full bg-accentGreen animate-pulse"></span> Deriv Live Stream Active
         </span>
       </div>
 
@@ -392,12 +406,38 @@
     let totalTicksReceived = 100;
 
     window.addEventListener('DOMContentLoaded', () => {
+      checkOAuthReturnParams();
       checkInactivityAndSession();
       initActivityTracker();
       renderContractControls();
       renderDigitMeters();
       connectLiveDigitStream();
     });
+
+    function redirectToDerivOAuth() {
+      const redirectUri = window.location.origin + window.location.pathname;
+      const oauthUrl = `https://oauth.deriv.com/oauth2/authorize?app_id=${DERIV_APP_ID}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+      window.location.href = oauthUrl;
+    }
+
+    function checkOAuthReturnParams() {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('acct1') && urlParams.has('token1')) {
+        const accountId = urlParams.get('acct1');
+        const token = urlParams.get('token1');
+        
+        currentUser = {
+          name: 'Deriv Trader',
+          email: 'trader@deriv.com',
+          derivId: accountId,
+          phone: '0712345678',
+          token: token
+        };
+        
+        window.history.replaceState({}, document.title, window.location.pathname);
+        authorizeWithDerivToken(token, 'Deriv Trader', '0712345678');
+      }
+    }
 
     function initActivityTracker() {
       ['click', 'keypress', 'mousemove', 'scroll'].forEach(evt => {
@@ -562,7 +602,7 @@
       if (mode === 'line') {
         frame.src = `https://charts.deriv.com/deriv/?symbol=${currentMarket}&interval=1t&theme=dark`;
         meterPanel.classList.remove('hidden');
-        showToast('Switched to Deriv Trader Tick Line Chart', 'info');
+        showToast('Switched to 1-Tick Line Chart (1s)', 'info');
       } else {
         frame.src = `https://charts.deriv.com/deriv/?symbol=${currentMarket}&interval=1m&chartType=candles&theme=dark`;
         meterPanel.classList.add('hidden');
@@ -865,6 +905,7 @@
       
       const bar = document.getElementById('scannerBar');
       const progressText = document.getElementById('scannerProgressText');
+      const tradeTypeSelect = document.getElementById('scannerTradeType').value;
       
       const interval = setInterval(() => {
         step++;
@@ -874,8 +915,17 @@
           clearInterval(interval);
           const chosen = symbols[Math.floor(Math.random() * symbols.length)];
           scannedSymbolCode = chosen.code;
-          const preds = ['EVEN', 'ODD', 'MATCH', 'DIFFER', 'OVER', 'UNDER'];
-          const pred = preds[Math.floor(Math.random() * preds.length)];
+          
+          let pred = 'EVEN';
+          if (tradeTypeSelect === 'even_odd') {
+            pred = Math.random() > 0.5 ? 'EVEN' : 'ODD';
+          } else if (tradeTypeSelect === 'match_diff') {
+            pred = Math.random() > 0.5 ? 'MATCH' : 'DIFFER';
+          } else if (tradeTypeSelect === 'over_under') {
+            pred = Math.random() > 0.5 ? 'OVER' : 'UNDER';
+          } else if (tradeTypeSelect === 'rise_fall') {
+            pred = Math.random() > 0.5 ? 'RISE' : 'FALL';
+          }
 
           document.getElementById('scannerBestMarket').value = chosen.name;
           document.getElementById('scannerPrediction').value = pred;
